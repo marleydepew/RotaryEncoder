@@ -66,8 +66,7 @@ class RotaryEncoder {
     bool scanClick() {
       if (digitalRead(d) == LOW) {
         if (millis() - pastClickMS > debounce) {
-          Serial.println(String(millis()) + " - " + String(pastClickMS) + " = " + String(millis() - pastClickMS) + " > " + String(debounce));
-
+          // Serial.println(String(millis()) + " - " + String(pastClickMS) + " = " + String(millis() - pastClickMS) + " > " + String(debounce));
           pastClickMS = millis();
           return true;
         }
