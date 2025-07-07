@@ -20,19 +20,19 @@ class RotaryEncoder {
   private:
 
     // Pin numbers
-    uint8_t a;
-    uint8_t b;
-    uint8_t d;
+    uint8_t a_pin;
+    uint8_t b_pin;
+    uint8_t d_pin;
 
     // Encoder states
-    bool a_old;
-    uint8_t position;
+    bool a_val_old;
     unsigned long last_turn_ms;
     unsigned long last_click_ms;
 
-    // Limits
-    uint8_t min_limit;
-    uint8_t max_limit;
+    // Positions
+    uint8_t shaft_pos;
+    uint8_t shaft_pos_min;
+    uint8_t shaft_pos_max;
     
     // CONSTANTS
     static const int CLICK_DEBOUNCE_INTERVAL = 500;
@@ -47,8 +47,8 @@ class RotaryEncoder {
     // Constructor
     // Assign microcontroller analog pin numbers for rotary encoder pins A, B and D.
     // Set the remaining member variables to thir default values.
-    RotaryEncoder(const uint8_t& pin_a_num, const uint8_t& pin_b_num, const uint8_t& pin_d_num, const uint8_t& minimum, const uint8_t& maximum);
-    RotaryEncoder(const uint8_t& pin_a_num, const uint8_t& pin_b_num, const uint8_t& minimum, const uint8_t& maximum);
+    RotaryEncoder(const uint8_t& a_pin_parm, const uint8_t& b_pin_parm, const uint8_t& d_pin_parm, const uint8_t& min_parm, const uint8_t& max_parm);
+    RotaryEncoder(const uint8_t& a_pin_parm, const uint8_t& b_pin_parm, const uint8_t& min_parm, const uint8_t& max_parm);
 
     // Set the pin mode for a, b and d to input with pullup resistors.
     // The value will be HIGH when the circuit is open.
@@ -67,13 +67,13 @@ class RotaryEncoder {
     int getPosition();
 
     // Set private member data, position.
-    void setPosition(const uint8_t& new_position);
+    void setPosition(const uint8_t& shaft_pos_new);
 
     // Set private member data, min limit.
-    void setMin(const uint8_t& new_min);
+    void setMin(const uint8_t& shaft_pos_min_new);
 
     // Set private member data, min limit.
-    void setMax(const uint8_t& new_max);
+    void setMax(const uint8_t& shaft_pos_max_new);
 
 
 };

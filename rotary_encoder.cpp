@@ -3,56 +3,48 @@
 // Constructor
 // Assign microcontroller analog pin numbers for rotary encoder pins A, B and D.
 // Set the remaining member variables to thir default values.
-RotaryEncoder::RotaryEncoder(const uint8_t& pin_a_num, const uint8_t& pin_b_num, const uint8_t& pin_d_num, const uint8_t& min, const uint8_t& max) {
-  a = pin_a_num;
-  b = pin_b_num;
-  d = pin_d_num;
+RotaryEncoder::RotaryEncoder(const uint8_t& a_pin_parm, const uint8_t& b_pin_parm, const uint8_t& d_pin_parm, const uint8_t& min_parm, const uint8_t& max_parm) {
+  a_pin = a_pin_parm;
+  b_pin = b_pin_parm;
+  d_pin = d_pin_parm;
 
-  min_limit = min;
-  max_limit = max;
-  position = min_limit + ((max_limit - min_limit) / 2);
-
-  a_old = HIGH;
+  a_val_old = HIGH;
   last_turn_ms = millis();
   last_click_ms = millis();
+
+  shaft_pos_min = min_parm;
+  shaft_pos_max = max_parm;
+  shaft_pos = (shaft_pos_max + shaft_pos_min) / 2;
 };
 
-RotaryEncoder::RotaryEncoder(const uint8_t& pin_a_num, const uint8_t& pin_b_num, const uint8_t& min, const uint8_t& max) {
-  a = pin_a_num;
-  b = pin_b_num;
-  d = '\0';
-
-  min_limit = min;
-  max_limit = max;
-  position = min_limit + ((max_limit - min_limit) / 2);
-
-  a_old = HIGH;
-  last_turn_ms = millis();
-  last_click_ms = millis();
+// Overload the constructor for rotary encoders without push button enabled (without D pin).
+RotaryEncoder::RotaryEncoder(const uint8_t& a_pin_parm, const uint8_t& b_pin_parm, const uint8_t& min_parm, const uint8_t& max_parm) {
+  this->RotaryEncoder(a_pin_parm, b_pin_parm, 0, min_parm, max_parm);
 };
 
-    // Set the pin mode for a, b and d to input with pullup resistors.
-    // The value will be HIGH when the circuit is open.
-    // The value will be LOW when the circuit is closed.
+// Set the pin mode for A, B and D to input with pullup resistors.
+// The value will be HIGH when the circuit is open.
+// The value will be LOW when the circuit is closed.
 void RotaryEncoder::bindPins() {
-  pinMode(a, INPUT_PULLUP);
-  pinMode(b, INPUT_PULLUP);
+  pinMode(a_pin, INPUT_PULLUP);
+  pinMode(b_pin, INPUT_PULLUP);
   
-  if (d != '\0') {
-    pinMode(d, INPUT_PULLUP);
+  if (d_pin) {
+    pinMode(d_pin, INPUT_PULLUP);
   }
 };
 
 // Check if there was any rotation on the rotary encoder shaft.
+// Updates shaft_pos and a_val_old with new values.
 // Returns TRUE if there was an update, otherwise FALSE.
 bool RotaryEncoder::scanRotate() {
-  bool a_new = digitalRead(a);
+  bool a_val_new = digitalRead(a);
   uint8_t delta = 0;
 
   // We only count a rotation when A moves from LOW to HIGH.
   // See this article to understand the algorithm.
   // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/#arduino-example-code-1-reading-rotary-encoders
-  if (a_new == HIGH && a_old == LOW) {
+  if (a_val_new == HIGH && a_val_old == LOW) {
 
     // If B is High, then the shaft is rotating clockwise.
     // If B is LOW, then the shaft is rotating counter-clockwise.
@@ -73,11 +65,11 @@ bool RotaryEncoder::scanRotate() {
   }
 
   // Update the position, but keep it between the min and max.
-  position += delta;
-  if (position < min_limit) {
-    position = min_limit;
-  } else if (position > max_limit) {
-    position = max_limit;
+  shaft_pos += delta;
+  if (shaft_pos < shaft_pos_min) {
+    shaft_pos = shaft_pos_min;
+  } else if (shaft_pos > shaft_pos_max) {
+    shaft_pos = shaft_pos_max;
   }
 
   a_old = a_new;
@@ -87,8 +79,8 @@ bool RotaryEncoder::scanRotate() {
 // Check if there are any clicks on the rotary encoder's button.
 // Returns TRUE if the button was clicked, otherwise FALSE.
 bool RotaryEncoder::scanClick() {
-  if (d != '\0') {
-    if (digitalRead(d) == LOW) {
+  if (d_pin) {
+    if (digitalRead(d_pin) == LOW) {
       if (millis() - last_click_ms > CLICK_DEBOUNCE_INTERVAL) {
         last_click_ms = millis();
         return true;
@@ -99,22 +91,22 @@ bool RotaryEncoder::scanClick() {
   return false;
 };
 
-// Get private member data, position.
+// Get private member data, shaft position.
 uint8_t RotaryEncoder::getPosition() {
-  return position;
+  return shaft_pos;
 };
 
-// Set private member data, position.
-void RotaryEncoder::setPosition(const uint8_t& new_position) {
-  position = new_position;
+// Set private member data, shaft position.
+void RotaryEncoder::setPosition(const uint8_t& shaft_pos_new) {
+  shaft_pos = shaft_pos_new;
 };
 
-// Set private member data, min limit.
-void RotaryEncoder::setMin(const uint8_t& new_min) {
-  min_limit = new_min;
+// Set private member data, shaft position minimum.
+void RotaryEncoder::setMin(const uint8_t& shaft_pos_min_new) {
+  shaft_pos_min = shaft_pos_min_new;
 };
 
-// Set private member data, min limit.
-void RotaryEncoder::setMax(const uint8_t& new_max) {
-  max_limit = new_max;
+// Set private member data, shaft position maximum.
+void RotaryEncoder::setMax(const uint8_t& shaft_pos_max_new) {
+  shaft_pos_max = shaft_pos_max_new;
 };
